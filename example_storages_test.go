@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/bxcodec/httpcache"
-	"github.com/bxcodec/httpcache/cache/redis"
+	"github.com/redis/go-redis/v9"
 )
 
 func Example_inMemoryStorageDefault() {
@@ -46,9 +46,12 @@ func Example_inMemoryStorageDefault() {
 
 func Example_redisStorage() {
 	client := &http.Client{}
-	handler, err := httpcache.NewWithRedisCache(client, true, &redis.CacheOptions{
+	c := redis.NewClient(&redis.Options{
 		Addr: "localhost:6379",
-	}, time.Second*15)
+	})
+	defer c.Close()
+
+	handler, err := httpcache.NewWithRedisCache(client, true, c, time.Second*15)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -96,7 +99,7 @@ func processCachedRequest(client *http.Client, handler *httpcache.CacheHandler) 
 		time.Sleep(time.Second * 1)
 		fmt.Println("Sequence >>> ", i)
 		if i%5 == 0 {
-			err := handler.CacheInteractor.Flush()
+			err := handler.CacheInteractor.Flush(context.Background())
 			if err != nil {
 				log.Fatal(err)
 			}

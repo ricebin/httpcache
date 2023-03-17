@@ -184,13 +184,13 @@ func storeRespToCache(cacheInteractor cache.ICacheInteractor, req *http.Request,
 	}
 	cachedResp.DumpedResponse = dumpedResponse
 
-	err = cacheInteractor.Set(getCacheKey(req), cachedResp)
+	err = cacheInteractor.Set(req.Context(), getCacheKey(req), cachedResp)
 	return
 }
 
 func getCachedResponse(cacheInteractor cache.ICacheInteractor, req *http.Request) (
 	resp *http.Response, cachedResp cache.CachedResponse, err error) {
-	cachedResp, err = cacheInteractor.Get(getCacheKey(req))
+	cachedResp, err = cacheInteractor.Get(req.Context(), getCacheKey(req))
 	if err != nil {
 		return
 	}

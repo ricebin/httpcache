@@ -23,12 +23,12 @@ func NewCustomInMemStorage() cache.ICacheInteractor {
 	}
 }
 
-func (c customInMemStorage) Set(key string, value cache.CachedResponse) error { //nolint
+func (c customInMemStorage) Set(_ context.Context, key string, value cache.CachedResponse) error { //nolint
 	c.cacheHandler.Set(key, value, patrickCache.DefaultExpiration)
 	return nil
 }
 
-func (c customInMemStorage) Get(key string) (res cache.CachedResponse, err error) {
+func (c customInMemStorage) Get(_ context.Context, key string) (res cache.CachedResponse, err error) {
 	cachedRes, ok := c.cacheHandler.Get(key)
 	if !ok {
 		err = cache.ErrCacheMissed
@@ -41,11 +41,11 @@ func (c customInMemStorage) Get(key string) (res cache.CachedResponse, err error
 	}
 	return
 }
-func (c customInMemStorage) Delete(key string) error {
+func (c customInMemStorage) Delete(_ context.Context, key string) error {
 	c.cacheHandler.Delete(key)
 	return nil
 }
-func (c customInMemStorage) Flush() error {
+func (c customInMemStorage) Flush(_ context.Context) error {
 	c.cacheHandler.Flush()
 	return nil
 }
@@ -76,7 +76,7 @@ func Example_withCustomStorage() {
 		time.Sleep(time.Second * 1)
 		fmt.Println("Sequence >>> ", i)
 		if i%5 == 0 {
-			err := handler.CacheInteractor.Flush()
+			err := handler.CacheInteractor.Flush(context.Background())
 			if err != nil {
 				log.Fatal(err)
 			}

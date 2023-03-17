@@ -23,7 +23,7 @@ func TestCacheRedis(t *testing.T) {
 		DB:       0,  // use default DB
 	})
 
-	cacheObj := rediscache.NewCache(context.Background(), c, 15)
+	cacheObj := rediscache.NewCache(c, 15)
 	testKey := "KEY"
 	testVal := cache.CachedResponse{
 		DumpedResponse: nil,
@@ -33,13 +33,13 @@ func TestCacheRedis(t *testing.T) {
 	}
 
 	// Try to SET item
-	err = cacheObj.Set(testKey, testVal)
+	err = cacheObj.Set(context.Background(), testKey, testVal)
 	if err != nil {
 		t.Fatalf("expected %v, got %v", nil, err)
 	}
 
 	// try to GET item from cache
-	res, err := cacheObj.Get(testKey)
+	res, err := cacheObj.Get(context.Background(), testKey)
 	if err != nil {
 		t.Fatalf("expected %v, got %v", nil, err)
 	}
@@ -53,13 +53,13 @@ func TestCacheRedis(t *testing.T) {
 	}
 
 	// try to DELETE the item
-	err = cacheObj.Delete(testKey)
+	err = cacheObj.Delete(context.Background(), testKey)
 	if err != nil {
 		t.Fatalf("expected %v, got %v", nil, err)
 	}
 
 	// try to re-GET item from cache after deleted
-	res, err = cacheObj.Get(testKey)
+	res, err = cacheObj.Get(context.Background(), testKey)
 	if err == nil {
 		t.Fatalf("expected %v, got %v", err, nil)
 	}

@@ -1,6 +1,8 @@
 package inmem
 
 import (
+	"context"
+
 	memcache "github.com/bxcodec/gotcha/cache"
 	"github.com/bxcodec/httpcache/cache"
 )
@@ -16,12 +18,12 @@ func NewCache(c memcache.Cache) cache.ICacheInteractor {
 	}
 }
 
-func (i *inmemCache) Set(key string,
+func (i *inmemCache) Set(ctx context.Context, key string,
 	value cache.CachedResponse) (err error) { //nolint
 	return i.cache.Set(key, value)
 }
 
-func (i *inmemCache) Get(key string) (res cache.CachedResponse, err error) {
+func (i *inmemCache) Get(ctx context.Context, key string) (res cache.CachedResponse, err error) {
 	item, err := i.cache.Get(key)
 	if err != nil {
 		return
@@ -30,7 +32,7 @@ func (i *inmemCache) Get(key string) (res cache.CachedResponse, err error) {
 	return
 }
 
-func (i *inmemCache) Delete(key string) (err error) {
+func (i *inmemCache) Delete(ctx context.Context, key string) (err error) {
 	return i.cache.Delete(key)
 }
 
@@ -38,6 +40,6 @@ func (i *inmemCache) Origin() string {
 	return cache.CacheStorageInMemory
 }
 
-func (i *inmemCache) Flush() error {
+func (i *inmemCache) Flush(ctx context.Context) error {
 	return i.cache.ClearCache()
 }

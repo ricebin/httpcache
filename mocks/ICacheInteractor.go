@@ -3,6 +3,8 @@
 package mocks
 
 import (
+	"context"
+
 	cache "github.com/bxcodec/httpcache/cache"
 	mock "github.com/stretchr/testify/mock"
 )
@@ -13,7 +15,7 @@ type ICacheInteractor struct {
 }
 
 // Delete provides a mock function with given fields: key
-func (_m *ICacheInteractor) Delete(key string) error {
+func (_m *ICacheInteractor) Delete(ctx context.Context, key string) error {
 	ret := _m.Called(key)
 
 	var r0 error
@@ -27,7 +29,7 @@ func (_m *ICacheInteractor) Delete(key string) error {
 }
 
 // Flush provides a mock function with given fields:
-func (_m *ICacheInteractor) Flush() error {
+func (_m *ICacheInteractor) Flush(ctx context.Context) error {
 	ret := _m.Called()
 
 	var r0 error
@@ -41,7 +43,7 @@ func (_m *ICacheInteractor) Flush() error {
 }
 
 // Get provides a mock function with given fields: key
-func (_m *ICacheInteractor) Get(key string) (cache.CachedResponse, error) {
+func (_m *ICacheInteractor) Get(ctx context.Context, key string) (cache.CachedResponse, error) {
 	ret := _m.Called(key)
 
 	var r0 cache.CachedResponse
@@ -76,7 +78,7 @@ func (_m *ICacheInteractor) Origin() string {
 }
 
 // Set provides a mock function with given fields: key, value
-func (_m *ICacheInteractor) Set(key string, value cache.CachedResponse) error {
+func (_m *ICacheInteractor) Set(ctx context.Context, key string, value cache.CachedResponse) error {
 	ret := _m.Called(key, value)
 
 	var r0 error

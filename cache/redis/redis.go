@@ -10,31 +10,22 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-// CacheOptions for storing data for Redis connections
-type CacheOptions struct {
-	Addr     string
-	Password string
-	DB       int // 0 for default DB
-}
-
 type redisCache struct {
-	ctx        context.Context
 	cache      *redis.Client
 	expiryTime time.Duration
 }
 
 // NewCache will return the redis cache handler
-func NewCache(ctx context.Context, c *redis.Client, exptime time.Duration) cache.ICacheInteractor {
+func NewCache(c *redis.Client, exptime time.Duration) cache.ICacheInteractor {
 	return &redisCache{
-		ctx:        ctx,
 		cache:      c,
 		expiryTime: exptime,
 	}
 }
 
-func (i *redisCache) Set(key string, value cache.CachedResponse) (err error) { //nolint
+func (i *redisCache) Set(ctx context.Context, key string, value cache.CachedResponse) (err error) { //nolint
 	valueJSON, _ := json.Marshal(value)
-	set := i.cache.Set(i.ctx, key, string(valueJSON), i.expiryTime*time.Second)
+	set := i.cache.Set(ctx, key, string(valueJSON), i.expiryTime*time.Second)
 	if err := set.Err(); err != nil {
 		fmt.Println(err)
 		return cache.ErrStorageInternal
@@ -42,8 +33,8 @@ func (i *redisCache) Set(key string, value cache.CachedResponse) (err error) { /
 	return nil
 }
 
-func (i *redisCache) Get(key string) (res cache.CachedResponse, err error) {
-	get := i.cache.Do(i.ctx, "get", key)
+func (i *redisCache) Get(ctx context.Context, key string) (res cache.CachedResponse, err error) {
+	get := i.cache.Do(ctx, "get", key)
 	if err = get.Err(); err != nil {
 		if err == redis.Nil {
 			return cache.CachedResponse{}, cache.ErrCacheMissed
@@ -58,9 +49,9 @@ func (i *redisCache) Get(key string) (res cache.CachedResponse, err error) {
 	return
 }
 
-func (i *redisCache) Delete(key string) (err error) {
+func (i *redisCache) Delete(ctx context.Context, key string) (err error) {
 	// deleting in redis equal to setting expiration time for key to 0
-	set := i.cache.Set(i.ctx, key, nil, 0)
+	set := i.cache.Set(ctx, key, nil, 0)
 	if err := set.Err(); err != nil {
 		return cache.ErrStorageInternal
 	}
@@ -71,8 +62,8 @@ func (i *redisCache) Origin() string {
 	return cache.CacheRedis
 }
 
-func (i *redisCache) Flush() error {
-	flush := i.cache.FlushAll(i.ctx)
+func (i *redisCache) Flush(ctx context.Context) error {
+	flush := i.cache.FlushAll(ctx)
 	if err := flush.Err(); err != nil {
 		return cache.ErrStorageInternal
 	}

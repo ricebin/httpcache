@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"context"
 	"errors"
 	"time"
 )
@@ -25,10 +26,10 @@ const (
 
 // ICacheInteractor is the interface contract for the detail cache functionality
 type ICacheInteractor interface {
-	Set(key string, value CachedResponse) error
-	Get(key string) (CachedResponse, error)
-	Delete(key string) error
-	Flush() error
+	Set(ctx context.Context, key string, value CachedResponse) error
+	Get(ctx context.Context, key string) (CachedResponse, error)
+	Delete(ctx context.Context, key string) error
+	Flush(ctx context.Context) error
 	Origin() string
 }
 
