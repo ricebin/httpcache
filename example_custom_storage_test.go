@@ -54,10 +54,9 @@ func (c customInMemStorage) Origin() string {
 }
 
 func Example_withCustomStorage() {
-	client := &http.Client{}
-	handler, err := httpcache.NewWithCustomStorageCache(client, true, NewCustomInMemStorage())
-	if err != nil {
-		log.Fatal(err)
+	cached := httpcache.NewWithCustomStorageCache(http.DefaultTransport, true, NewCustomInMemStorage())
+	client := &http.Client{
+		Transport: cached,
 	}
 
 	for i := 0; i < 100; i++ {
@@ -76,7 +75,7 @@ func Example_withCustomStorage() {
 		time.Sleep(time.Second * 1)
 		fmt.Println("Sequence >>> ", i)
 		if i%5 == 0 {
-			err := handler.CacheInteractor.Flush(context.Background())
+			err := cached.CacheInteractor.Flush(context.Background())
 			if err != nil {
 				log.Fatal(err)
 			}

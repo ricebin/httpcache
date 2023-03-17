@@ -12,13 +12,12 @@ import (
 )
 
 func Example_inMemoryStorageDefault() {
-	client := &http.Client{}
-	handler, err := httpcache.NewWithInmemoryCache(client, true, time.Second*15)
-	if err != nil {
-		log.Fatal(err)
+	cached := httpcache.NewWithInmemoryCache(http.DefaultTransport, true, time.Second*15)
+	client := &http.Client{
+		Transport: cached,
 	}
 
-	processCachedRequest(client, handler)
+	processCachedRequest(client, cached)
 	// Example Output:
 	/*
 		2020/06/21 13:14:51 Cache item's missing failed to retrieve from cache, trying with a live version
@@ -45,18 +44,17 @@ func Example_inMemoryStorageDefault() {
 }
 
 func Example_redisStorage() {
-	client := &http.Client{}
 	c := redis.NewClient(&redis.Options{
 		Addr: "localhost:6379",
 	})
 	defer c.Close()
 
-	handler, err := httpcache.NewWithRedisCache(client, true, c, time.Second*15)
-	if err != nil {
-		log.Fatal(err)
+	cached := httpcache.NewWithRedisCache(http.DefaultTransport, true, c, time.Second*15)
+	client := &http.Client{
+		Transport: cached,
 	}
 
-	processCachedRequest(client, handler)
+	processCachedRequest(client, cached)
 	// Example Output:
 	/*
 		2020/06/21 13:14:51 Cache item's missing failed to retrieve from cache, trying with a live version

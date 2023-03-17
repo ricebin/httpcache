@@ -15,19 +15,14 @@ import (
 // NewWithCustomStorageCache will initiate the httpcache with your defined cache storage
 // To use your own cache storage handler, you need to implement the cache.Interactor interface
 // And pass it to httpcache.
-func NewWithCustomStorageCache(client *http.Client, rfcCompliance bool,
-	cacheInteractor cache.ICacheInteractor) (cacheHandler *CacheHandler, err error) {
-	return newClient(client, rfcCompliance, cacheInteractor)
+func NewWithCustomStorageCache(transport http.RoundTripper, rfcCompliance bool,
+	cacheInteractor cache.ICacheInteractor) *CacheHandler {
+	return newClient(transport, rfcCompliance, cacheInteractor)
 }
 
-func newClient(client *http.Client, rfcCompliance bool,
-	cacheInteractor cache.ICacheInteractor) (cachedHandler *CacheHandler, err error) {
-	if client.Transport == nil {
-		client.Transport = http.DefaultTransport
-	}
-	cachedHandler = NewCacheHandlerRoundtrip(client.Transport, rfcCompliance, cacheInteractor)
-	client.Transport = cachedHandler
-	return
+func newClient(transport http.RoundTripper, rfcCompliance bool,
+	cacheInteractor cache.ICacheInteractor) *CacheHandler {
+	return NewCacheHandlerRoundtrip(transport, rfcCompliance, cacheInteractor)
 }
 
 const (
@@ -36,21 +31,17 @@ const (
 
 // NewWithInmemoryCache will create a complete cache-support of HTTP client with using inmemory cache.
 // If the duration not set, the cache will use LFU algorithm
-func NewWithInmemoryCache(client *http.Client, rfcCompliance bool, duration ...time.Duration) (cachedHandler *CacheHandler, err error) {
-	var expiryTime time.Duration
-	if len(duration) > 0 {
-		expiryTime = duration[0]
-	}
+func NewWithInmemoryCache(transport http.RoundTripper, rfcCompliance bool, expiryTime time.Duration) *CacheHandler {
 	c := gotcha.New(
 		gotcha.NewOption().SetAlgorithm(inmemcache.LRUAlgorithm).
 			SetExpiryTime(expiryTime).SetMaxSizeItem(MaxSizeCacheItem),
 	)
 
-	return newClient(client, rfcCompliance, inmem.NewCache(c))
+	return newClient(transport, rfcCompliance, inmem.NewCache(c))
 }
 
 // NewWithRedisCache will create a complete cache-support of HTTP client with using redis cache.
 // If the duration not set, the cache will use LFU algorithm
-func NewWithRedisCache(client *http.Client, rfcCompliance bool, c *redis.Client, expiryTime time.Duration) (cachedHandler *CacheHandler, err error) {
-	return newClient(client, rfcCompliance, rediscache.NewCache(c, expiryTime))
+func NewWithRedisCache(transport http.RoundTripper, rfcCompliance bool, c *redis.Client, expiryTime time.Duration) *CacheHandler {
+	return newClient(transport, rfcCompliance, rediscache.NewCache(c, expiryTime))
 }
